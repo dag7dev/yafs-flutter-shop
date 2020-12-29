@@ -55,3 +55,5 @@ Nota sui prodotti: se si clicca su tutto il prodotto, ad eccezione del pulsante 
 Il pulsante carrello invece è posizionato in alto a destra: quando si farà click su di esso verranno mostrati gli articoli precedentemente aggiunti, un + e - con una casella di testo (SpinBox) che permetterà di aggiungere o rimuovere eventuali articoli dal carrello, una box relativa al totale e due pulsanti incolonnati: "paga ora" e "svuota carrello".
 
 Facendo click sul secondo, verrà azzerato il carrello ed eventuali modifiche andranno perse (esse andranno comunque perse a seguito del ricaricamento della pagina).
+
+Per cancellare un prodotto basta fare swipe left o swipe right sulla card dell'oggetto.
