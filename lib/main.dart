@@ -1,401 +1,219 @@
-// various import
-import 'dart:async';
-import 'dart:convert';
-import 'dart:html';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+// this is a visual representation of a cart (widget)
+
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:http/http.dart' as http;
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flip_card/flip_card.dart';
-import 'product.dart';
-import 'beautifulcart.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_spinbox/flutter_spinbox.dart';
+import 'package:yet_another_flutter_shop/product.dart';
 import 'cart.dart';
 import 'utils.dart';
 
-// fetches products
-Future<List<Product>> fetchProducts(http.Client client) async {
-  final response = await client.get('https://fakestoreapi.com/products');
+class BeautifulCart extends StatefulWidget {
+  Cart cart;
 
-  return compute(parseProducts, response.body);
-}
-
-// converts a response body into a List<Product>.
-List<Product> parseProducts(String responseBody) {
-  final parsed = jsonDecode(responseBody).cast<Map<String, dynamic>>();
-
-  return parsed.map<Product>((json) => Product.fromJson(json)).toList();
-}
-
-// main function
-void main() => runApp(YafsApp());
-
-class YafsApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final appTitle = 'YAFS - Demo';
-
-    return MaterialApp(
-      title: appTitle,
-      home: HomePage(),
-    );
+  BeautifulCart(Cart cart) {
+    this.cart = cart;
   }
-}
 
-class HomePage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  _BeautifulCartState createState() => _BeautifulCartState(cart);
 }
 
-// main class containing the shop
-class _HomePageState extends State<HomePage> {
-  // declaring variables and costants
-  final String title = "YAFS - Demo";
-  final String btnAddText = "Add to cart";
-  Cart cart = Cart();
-  List<Product> products;
+class _BeautifulCartState extends State<BeautifulCart> {
+  Cart cart;
 
-  // constructor
-  _HomePageState({this.products});
+  _BeautifulCartState(Cart cart) {
+    this.cart = cart;
+  }
 
-  // build method: it defines the main application
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: Text(title),
-        actions: [
-          // defining search placeholder button
-          Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: Icon(
-              Icons.search,
-              size: 26.0,
-            ),
-          ),
+    var totCart =
+        cart.isEmpty() ? "0.00€" : cart.getTotal().toStringAsFixed(2) + "€";
 
-          // defining cart and what happens when you click on cart button
-          Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: RaisedButton.icon(
-                color: Colors.white,
-                icon: Icon(
-                  Icons.shopping_cart,
-                ),
-                label: Text(
-                  "Cart",
-                  style: TextStyle(
-                      color: Colors.black, fontSize: 16, fontFamily: 'Lato'),
-                ),
-                onPressed: () => {
-                  AwesomeDialog(
-                    customHeader: Icon(
-                      Icons.shopping_cart,
-                      size: 44,
-                      color: Colors.green,
-                    ),
-                    width: 600,
-                    context: context,
-                    headerAnimationLoop: false,
-                    animType: AnimType.BOTTOMSLIDE,
-
-                    // if cart is empty then show an appropriate message
-                    // else, shows the cart
-                    body: cart.isEmpty()
-                        ? Text("This cart is empty!")
-                        : BeautifulCart(cart),
-                    btnOk: Center(
-                      child: Column(children: [
-                        // defining buttons (pay now, empty cart)
-                        SizedBox(
-                          height: 100,
-                          child: Container(
-                            child: Column(
-                              children: [
-                                // PAY NOW BUTTON
-                                FlatButton.icon(
-                                  icon: Icon(
-                                    Icons.shopping_cart,
-                                    color: cart.isEmpty()
-                                        ? Colors.grey
-                                        : Colors.green,
-                                  ),
-                                  minWidth: 200,
-                                  onPressed: cart.isEmpty() ? null : () => {},
-                                  color: Colors.white,
-                                  padding: EdgeInsets.only(
-                                      left: 30.0,
-                                      right: 30,
-                                      bottom: 20,
-                                      top: 20),
-                                  label: Text(
-                                    "Pay now",
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        color: cart.isEmpty()
-                                            ? Colors.grey
-                                            : Colors.green,
-                                        fontFamily: 'Lato'),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side: BorderSide(
-                                      color: cart.isEmpty()
-                                          ? Colors.grey
-                                          : Colors.green,
-                                    ),
-                                  ),
-                                ),
-
-                                // EMPTY CART BUTTON
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
-                                  child: FlatButton.icon(
-                                    disabledColor: Colors.white,
-                                    icon: Icon(
-                                      Icons.cancel,
-                                      color: cart.isEmpty()
-                                          ? Colors.grey
-                                          : Colors.red,
-                                    ),
-                                    onPressed: cart.isEmpty()
-                                        ? null
-                                        : () => {
-                                              cart.removeAll(),
-                                              Navigator.pop(context, false)
-                                            },
-                                    color: Colors.white,
-                                    padding: EdgeInsets.only(
-                                        left: 30.0,
-                                        right: 30,
-                                        bottom: 20,
-                                        top: 20),
-                                    label: Text(
-                                      "Empty Cart",
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          color: cart.isEmpty()
-                                              ? Colors.grey
-                                              : Colors.red,
-                                          fontFamily: 'Lato'),
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(18.0),
-                                      side: BorderSide(
-                                        color: cart.isEmpty()
-                                            ? Colors.grey
-                                            : Colors.red,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ]),
-                    ),
-                  )..show()
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
-
-      // builds main homepage with cards
-      body: FutureBuilder<List<Product>>(
-        future: fetchProducts(http.Client()),
-        builder: (context, snapshot) {
-          // in case of error while calling api, print the error
-          if (snapshot.hasError) print(snapshot.error);
-
-          // defining number of axis, it will be useful later
-          int noaxis;
-
-          int Function() axisCount = () {
-            if (MediaQuery.of(context).orientation == Orientation.landscape) {
-              return 4;
-            } else {
-              return 2;
-            }
-          };
-
-          noaxis = axisCount();
-
-          // in case of no error
-          if (snapshot.hasData) {
-            products = snapshot.data;
-
-            // build cards
-            return GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                // mandatory: without them, we would not be able to
-                // proper visualize elements on screen
-                crossAxisCount: noaxis,
-                childAspectRatio: noaxis == 2 ? 0.4 : 0.999, // ratio 4 mobiles
-              ),
-              itemCount: products.length,
+    // core part which will be shown in the modal cart window
+    return Container(
+      width: 500,
+      height: 450,
+      child: CupertinoScrollbar(
+        child: Column(children: [
+          Expanded(
+            // build something scrollable
+            child: ListView.builder(
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
+              itemCount: cart.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-
-                  // let's build our card!
-                  child: Card(
-                    elevation: 10,
+                final item = cart.get(index);
+                String tot =
+                    (item.price * cart.getQtyByProd(item)).toStringAsFixed(2) +
+                        "€";
+                // this is gonna to be returned by itembuilder: card!
+                return Dismissible(
+                  onDismissed: (direction) {
+                    cart.cart.remove(item);
+                    setState(() {
+                      totCart = cart.isEmpty()
+                          ? "0.00€"
+                          : cart.getTotal().toStringAsFixed(2) + "€";
+                    });
+                  },
+                  key: Key(item.id.toString()),
+                  child: SizedBox(
+                    height: 145,
                     child: InkWell(
                       onTap: () {},
                       child: FlipCard(
-                        front: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              // defining card product title
+                        // card on a card, to build shadow easier
+                        front: Card(
+                          elevation: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Row(children: [
+                              // CARD thumbnail
                               Expanded(
-                                flex: 0,
-                                child: AutoSizeText(
-                                  products[index].title,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black),
-                                  maxLines: 2,
-                                  minFontSize: 10,
-                                  maxFontSize: 22,
+                                flex: 1,
+                                child: Container(
+                                  width: 400,
+                                  child: Image.network(
+                                    item.thumbnailUrl,
+                                  ),
                                 ),
                               ),
 
-                              // defining card product category
+                              // card product title
                               Expanded(
-                                flex: 0,
+                                flex: 1,
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 16, left: 8.0, right: 8),
+                                      child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: AutoSizeText(
+                                            item.title,
+                                            maxLines: 2,
+                                            style: TextStyle(
+                                                fontFamily: "Poppins"),
+                                          )),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8.0, right: 8),
+                                      child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 16.0),
+                                            child: AutoSizeText(
+                                              capitalize(item.category),
+                                              maxLines: 2,
+                                              style:
+                                                  TextStyle(fontFamily: "Lato"),
+                                            ),
+                                          )),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              //card product unit price
+                              Expanded(
+                                flex: 1,
                                 child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 3, bottom: 16.0),
-                                  child: Text(
-                                    capitalize(products[index].category),
-                                    style: TextStyle(
-                                        fontFamily: 'Lato',
-                                        fontSize: 18,
-                                        color: Colors.grey[800]),
+                                  padding: const EdgeInsets.only(top: 32.0),
+                                  child: Column(
+                                    children: [
+                                      AutoSizeText(
+                                        "Unit price",
+                                        maxLines: 2,
+                                      ),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 4.0),
+                                        child: AutoSizeText(
+                                            item.price.toStringAsFixed(2) +
+                                                "€"),
+                                      )
+                                    ],
                                   ),
                                 ),
                               ),
 
-                              // defining card product image
+                              // card product quantity (based on cart)
                               Expanded(
-                                flex: 5,
-                                child: SizedBox(
-                                  child: Container(
-                                      height: 100,
-                                      child: Image.network(
-                                          products[index].thumbnailUrl)),
-                                ),
-                              ),
+                                flex: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 32.0),
+                                  child: Column(
+                                    children: [
+                                      AutoSizeText("Qty"),
+                                      Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 4.0),
+                                          child: SpinBox(
+                                              min: 1,
+                                              max: 99,
+                                              value: cart
+                                                  .getQtyByProd(item)
+                                                  .toDouble(),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  if (value == 0) {
+                                                    cart.cart.remove(item);
+                                                  }
 
-                              // defining card product cost
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 16.0, bottom: 16),
-                                child: AutoSizeText(
-                                  products[index].price.toStringAsFixed(2) +
-                                      " €",
-                                  style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold),
-                                  maxLines: 2,
-                                ),
-                              ),
-
-                              // Button "add to cart"
-                              RaisedButton.icon(
-                                focusColor: Colors.grey,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side: BorderSide(color: Colors.black)),
-                                color: Colors.white,
-                                icon: Icon(
-                                  Icons.shopping_cart,
-                                  color: Colors.black,
-                                ),
-                                label: Padding(
-                                  padding: EdgeInsets.only(bottom: 20, top: 20),
-                                  child: AutoSizeText(
-                                    btnAddText,
-                                    style: TextStyle(
-                                        color: Colors.black, fontSize: 16),
-                                    minFontSize: 14,
-                                    maxFontSize: 18,
+                                                  tot = (item.price *
+                                                              cart.getQtyByProd(
+                                                                  item))
+                                                          .toStringAsFixed(2) +
+                                                      "€";
+                                                  totCart = cart.isEmpty()
+                                                      ? "0.00€"
+                                                      : cart
+                                                              .getTotal()
+                                                              .toStringAsFixed(
+                                                                  2) +
+                                                          "€";
+                                                });
+                                                cart.updateQty(
+                                                    item, value.toInt());
+                                              })
+                                          //child: AutoSizeText(cart.getQtyByProd(item).toString()),
+                                          )
+                                    ],
                                   ),
                                 ),
-                                onPressed: () => {
-                                  // if cart already contains that product, dont
-                                  // add it and show a proper modal window
-                                  // else, add to cart that product and
-                                  // show the modal window
-                                  if (!cart.cart.containsKey(products[index]))
-                                    {
-                                      cart.insert(products[index], 1),
-                                      AwesomeDialog(
-                                          context: context,
-                                          animType: AnimType.BOTTOMSLIDE,
-                                          headerAnimationLoop: false,
-                                          dialogType: DialogType.SUCCES,
-                                          title: 'Success',
-                                          body: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: AutoSizeText(
-                                                "Item has been added to your cart.",
-                                                style: TextStyle(
-                                                    fontFamily: 'Lato',
-                                                    fontSize: 20)),
-                                          ),
-                                          btnOkOnPress: () {},
-                                          btnOkIcon: Icons.check_circle,
-                                          onDissmissCallback: () {})
-                                        ..show()
-                                    }
-                                  else
-                                    {
-                                      AwesomeDialog(
-                                          context: context,
-                                          animType: AnimType.BOTTOMSLIDE,
-                                          headerAnimationLoop: false,
-                                          dialogType: DialogType.ERROR,
-                                          title: 'Failed',
-                                          body: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: AutoSizeText(
-                                                'Item has already been added to your cart!',
-                                                style: TextStyle(
-                                                    fontFamily: 'Lato',
-                                                    fontSize: 20)),
-                                          ),
-                                          btnCancelText: "Go back",
-                                          btnCancelOnPress: () {},
-                                          btnCancelIcon: Icons.arrow_back,
-                                          onDissmissCallback: () {})
-                                        ..show()
-                                    },
-                                },
-                              )
-                            ],
+                              ),
+
+                              //card product total (quantity*unitprice)
+                              Column(children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 32.0),
+                                    child: Column(
+                                      children: [
+                                        AutoSizeText("Tot."),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 4.0),
+                                          child: AutoSizeText(tot),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ]),
+                            ]),
                           ),
                         ),
 
-                        // show the description of the product
+                        //card product description
                         back: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Center(
-                              child: AutoSizeText(
-                            products[index].description,
-                            style: TextStyle(fontFamily: 'Lato', fontSize: 20),
-                          )),
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(child: AutoSizeText(item.description)),
                         ),
                         direction: FlipDirection.HORIZONTAL,
                         flipOnTouch: true,
@@ -404,12 +222,31 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               },
-            );
-          } else {
-            // while waiting show a circular progress indicator
-            return Center(child: CircularProgressIndicator());
-          }
-        },
+            ),
+          ),
+
+          // building real total price (cart total)
+          Container(
+            width: 200,
+            child: Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(children: [
+                  Expanded(flex: 1, child: AutoSizeText("Total: ")),
+                  Expanded(
+                    flex: 1,
+                    child: AutoSizeText(
+                      cart.isEmpty() ? "0.00€" : totCart.toString(),
+                      textAlign: TextAlign.right,
+                      style: TextStyle(fontFamily: 'Lato', fontSize: 20),
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+          ),
+        ]),
       ),
     );
   }
