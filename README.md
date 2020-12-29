@@ -3,7 +3,7 @@ YAFS - Yet Another Flutter Shop - un piccolo store costruito in Flutter
 
 ## Descrizione
 Un piccolo shop realizzato interamente con il framework [Flutter](https://github.com/flutter/flutter) PWA.
-Live demo disponibile qui: dag7.it/yafslive
+Live demo disponibile qui: [https://dag7.it/yafslive](dag7.it/yafslive)
 
 ## Requisiti
 Il progetto è stato realizzato mediante l'IDE "Android Studio", opportunamente configurato per utilizzare il plugin "Flutter".
