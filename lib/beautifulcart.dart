@@ -5,6 +5,7 @@ import 'package:flip_card/flip_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinbox/flutter_spinbox.dart';
+import 'package:yet_another_flutter_shop/product.dart';
 import 'cart.dart';
 import 'utils.dart';
 
@@ -44,162 +45,179 @@ class _BeautifulCartState extends State<BeautifulCart> {
               shrinkWrap: true,
               itemCount: cart.length,
               itemBuilder: (context, index) {
-                var item = cart.get(index);
+                final item = cart.get(index);
                 String tot =
                     (item.price * cart.getQtyByProd(item)).toStringAsFixed(2) +
                         "€";
                 // this is gonna to be returned by itembuilder: card!
-                return SizedBox(
-                  height: 145,
-                  child: InkWell(
-                    onTap: () {},
-                    child: FlipCard(
-                      // card on a card, to build shadow easier
-                      front: Card(
-                        elevation: 3,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Row(children: [
-                            // CARD thumbnail
-                            Expanded(
-                              flex: 1,
-                              child: Container(
-                                width: 400,
-                                child: Image.network(
-                                  item.thumbnailUrl,
+                return Dismissible(
+                  onDismissed: (direction) {
+                    cart.cart.remove(item);
+                    setState(() {
+                      totCart = cart.isEmpty()
+                          ? "0.00€"
+                          : cart.getTotal().toStringAsFixed(2) + "€";
+                    });
+                  },
+                  key: Key(item.id.toString()),
+                  child: SizedBox(
+                    height: 145,
+                    child: InkWell(
+                      onTap: () {},
+                      child: FlipCard(
+                        // card on a card, to build shadow easier
+                        front: Card(
+                          elevation: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Row(children: [
+                              // CARD thumbnail
+                              Expanded(
+                                flex: 1,
+                                child: Container(
+                                  width: 400,
+                                  child: Image.network(
+                                    item.thumbnailUrl,
+                                  ),
                                 ),
                               ),
-                            ),
 
-                            // card product title
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 16, left: 8.0, right: 8),
-                                    child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: AutoSizeText(
-                                          item.title,
-                                          maxLines: 2,
-                                          style:
-                                              TextStyle(fontFamily: "Poppins"),
-                                        )),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 8.0, right: 8),
-                                    child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 16.0),
-                                          child: AutoSizeText(
-                                            capitalize(item.category),
-                                            maxLines: 2,
-                                            style:
-                                                TextStyle(fontFamily: "Lato"),
-                                          ),
-                                        )),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            //card product unit price
-                            Expanded(
-                              flex: 1,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 32.0),
+                              // card product title
+                              Expanded(
+                                flex: 1,
                                 child: Column(
                                   children: [
-                                    AutoSizeText(
-                                      "Unit price",
-                                      maxLines: 2,
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 16, left: 8.0, right: 8),
+                                      child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: AutoSizeText(
+                                            item.title,
+                                            maxLines: 2,
+                                            style: TextStyle(
+                                                fontFamily: "Poppins"),
+                                          )),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 4.0),
-                                      child: AutoSizeText(
-                                          item.price.toStringAsFixed(2) + "€"),
-                                    )
+                                      padding: const EdgeInsets.only(
+                                          left: 8.0, right: 8),
+                                      child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 16.0),
+                                            child: AutoSizeText(
+                                              capitalize(item.category),
+                                              maxLines: 2,
+                                              style:
+                                                  TextStyle(fontFamily: "Lato"),
+                                            ),
+                                          )),
+                                    ),
                                   ],
                                 ),
                               ),
-                            ),
 
-                            // card product quantity (based on cart)
-                            Expanded(
-                              flex: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 32.0),
-                                child: Column(
-                                  children: [
-                                    AutoSizeText("Qty"),
-                                    Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 4.0),
-                                        child: SpinBox(
-                                            min: 1,
-                                            max: 99,
-                                            value: cart
-                                                .getQtyByProd(item)
-                                                .toDouble(),
-                                            onChanged: (value) {
-                                              setState(() {
-                                                tot = (item.price *
-                                                            cart.getQtyByProd(
-                                                                item))
-                                                        .toStringAsFixed(2) +
-                                                    "€";
-                                                totCart = cart.isEmpty()
-                                                    ? "0.00€"
-                                                    : cart
-                                                            .getTotal()
-                                                            .toStringAsFixed(
-                                                                2) +
-                                                        "€";
-                                              });
-                                              cart.updateQty(
-                                                  item, value.toInt());
-                                            })
-                                        //child: AutoSizeText(cart.getQtyByProd(item).toString()),
-                                        )
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            //card product total (quantity*unitprice)
-                            Column(children: [
+                              //card product unit price
                               Expanded(
+                                flex: 1,
                                 child: Padding(
                                   padding: const EdgeInsets.only(top: 32.0),
                                   child: Column(
                                     children: [
-                                      AutoSizeText("Tot."),
+                                      AutoSizeText(
+                                        "Unit price",
+                                        maxLines: 2,
+                                      ),
                                       Padding(
                                         padding:
                                             const EdgeInsets.only(top: 4.0),
-                                        child: AutoSizeText(tot),
+                                        child: AutoSizeText(
+                                            item.price.toStringAsFixed(2) +
+                                                "€"),
                                       )
                                     ],
                                   ),
                                 ),
-                              )
-                            ]),
-                          ]),
-                        ),
-                      ),
+                              ),
 
-                      //card product description
-                      back: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Center(child: AutoSizeText(item.description)),
+                              // card product quantity (based on cart)
+                              Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 32.0),
+                                  child: Column(
+                                    children: [
+                                      AutoSizeText("Qty"),
+                                      Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 4.0),
+                                          child: SpinBox(
+                                              min: 1,
+                                              max: 99,
+                                              value: cart
+                                                  .getQtyByProd(item)
+                                                  .toDouble(),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  if (value == 0) {
+                                                    cart.cart.remove(item);
+                                                  }
+
+                                                  tot = (item.price *
+                                                              cart.getQtyByProd(
+                                                                  item))
+                                                          .toStringAsFixed(2) +
+                                                      "€";
+                                                  totCart = cart.isEmpty()
+                                                      ? "0.00€"
+                                                      : cart
+                                                              .getTotal()
+                                                              .toStringAsFixed(
+                                                                  2) +
+                                                          "€";
+                                                });
+                                                cart.updateQty(
+                                                    item, value.toInt());
+                                              })
+                                          //child: AutoSizeText(cart.getQtyByProd(item).toString()),
+                                          )
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              //card product total (quantity*unitprice)
+                              Column(children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 32.0),
+                                    child: Column(
+                                      children: [
+                                        AutoSizeText("Tot."),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 4.0),
+                                          child: AutoSizeText(tot),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              ]),
+                            ]),
+                          ),
+                        ),
+
+                        //card product description
+                        back: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(child: AutoSizeText(item.description)),
+                        ),
+                        direction: FlipDirection.HORIZONTAL,
+                        flipOnTouch: true,
                       ),
-                      direction: FlipDirection.HORIZONTAL,
-                      flipOnTouch: true,
                     ),
                   ),
                 );
